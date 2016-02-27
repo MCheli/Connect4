@@ -17,23 +17,10 @@ public class MyAgent extends Agent
     }
 
     /**
-     * The move method is run every time it is this agent's turn in the game. You may assume that
-     * when move() is called, the game has at least one open slot for a token, and the game has not
-     * already been won.
-     * 
-     * By the end of the move method, the agent should have placed one token into the game at some
-     * point.
-     * 
-     * After the move() method is called, the game engine will check to make sure the move was
-     * valid. A move might be invalid if:
-     * - No token was place into the game.
-     * - More than one token was placed into the game.
-     * - A previous token was removed from the game.
-     * - The color of a previous token was changed.
-     * - There are empty spaces below where the token was placed.
-     * 
-     * If an invalid move is made, the game engine will announce it and the game will be ended.
-     * 
+     * The move method is run every time it is this agent's turn in the game.  
+     * Will attempt to win the game if possible, then block if possible, 
+     * and then will run through a series of best moves.  If all else fails
+     * then it will do a random move.
      */
     public void move()
     {
@@ -45,20 +32,20 @@ public class MyAgent extends Agent
         {
             moveOnColumn(theyCanWin()); //Place blocking piece
         }
-        else if(this.stackUp() != -1)
+        else if(this.stackUp() != -1) //else if I can stack vertically
         {
             moveOnColumn(stackUp());
         }
-        else if(this.stackRight() != -1)
+        else if(this.stackRight() != -1) //else if I can streak horizontally right
         {
             moveOnColumn(stackRight());
         }
 
-        else if(this.stackLeft() != -1)
+        else if(this.stackLeft() != -1) //else if I can streak horizontally leftt
         {
             moveOnColumn(stackLeft());
         }
-        else
+        else //else make a random move
         {
             moveOnColumn(randomMove());
         }
@@ -73,7 +60,7 @@ public class MyAgent extends Agent
     public void moveOnColumn(int columnNumber)
     {
         int lowestEmptySlotIndex = getLowestEmptyIndex(myGame.getColumn(columnNumber));   // Find the top empty slot in the column
-                                                                                                  // If the column is full, lowestEmptySlot will be -1
+                                                                                          // If the column is full, lowestEmptySlot will be -1
         if (lowestEmptySlotIndex > -1)  // if the column is not full
         {
             Connect4Slot lowestEmptySlot = myGame.getColumn(columnNumber).getSlot(lowestEmptySlotIndex);  // get the slot in this column at this index
@@ -121,75 +108,109 @@ public class MyAgent extends Agent
         }
         return i;
     }
-    /**
-     * TODO: documentation
-     */
     
+    /**
+     * Returns the index of a column which can be used to stack on top of.
+     * Used for strategically building streaks of colors.
+     * 
+     * @return the column which a move would result in a vertical streak.
+     */
     public int stackUp()
     {
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            if(lowestEmpty != 5)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column
+            if(lowestEmpty != 5) //Skip if the lowest spot is the bottom
             {
-                Connect4Slot top = myGame.getColumn(col).getSlot(lowestEmpty + 1);
-                if(top.getIsRed() && lowestEmpty > 0 && top != null)
+                Connect4Slot top = myGame.getColumn(col).getSlot(lowestEmpty + 1); //The top piece in the column
+                if (iAmRed) //If i'm the red player
                 {
-                    return col;
+                    if(top.getIsRed() && lowestEmpty > 0 && top != null) //If the top piece is red, the column is not full and there is a top piece
+                    {
+                        return col; //Return this column
+                    }
+                }
+                else //I'm the yellow player
+                {
+                    if(top.getIsYellow() && lowestEmpty > 0 && top != null) //If the top piece is yellow, the column is not full and there is a top piece
+                    {
+                        return col; //Return this column
+                    }
                 }
             }
         }    
-        return -1;        
+        return -1;  //There is no possible stackUp opportunities
     }
+    
     /**
-     * TODO: DOcumentation
+     * Returns the index of a column which can be used to stack to the left of.
+     * Used for strategically building streaks of colors.
+     * 
+     * @return the column which a move would result in a horizontal streak
      */
     public int stackLeft()
     {
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            
-            if(col + 1 < myGame.getColumnCount() && lowestEmpty != -1)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column
+            if(col + 1 < myGame.getColumnCount() && lowestEmpty != -1)  //If there is a column to the right, and this column is not full
             {
-                Connect4Slot right = myGame.getColumn(col + 1).getSlot(lowestEmpty);
-                if(right.getIsRed() && right != null)
+                Connect4Slot right = myGame.getColumn(col + 1).getSlot(lowestEmpty); //The slot to the right
+                if (iAmRed) //If i'm the red player
                 {
-                    return col;
+                    if(right.getIsRed() && right != null) //The slot to the right is red and right is not empty
+                    {
+                        return col; //return this column
+                    }
+                }
+                else //I'm the yellow player
+                {
+                    if(right.getIsYellow() && right != null) //the slot to the right is yellow and right is not empty
+                    {
+                        return col; //return this column
+                    }
                 }
             }
         }
-        return -1;
+        return -1; //There is no possible stackLeft opportunities
     }
+    
     /**
-     * TODO: DOcumentation
+     * Returns the index of a column which can be used to stack to the right of.
+     * Used for strategically building streaks of colors.
+     * 
+     * @return the column which a move would result in a horizontal streak
      */
     public int stackRight()
     {
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            
-            if(col - 1 > 0 && lowestEmpty != -1)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column 
+            if(col - 1 > 0 && lowestEmpty != -1) //If there is a column to the left, and this column is not full
             {
-                Connect4Slot left = myGame.getColumn(col - 1).getSlot(lowestEmpty);
-                if(left.getIsRed() && left != null)
+                Connect4Slot left = myGame.getColumn(col - 1).getSlot(lowestEmpty); //The slot to the left
+                if (iAmRed) //If i'm the red player
                 {
-                    return col;
+                    if(left.getIsRed() && left != null) //The slot to the les is red and left is not empty
+                    {
+                        return col; //return this column
+                    }
+                }
+                else //I'm the yellow player
+                {
+                    if(left.getIsYellow() && left != null) //The slot to the left is red and left is not empty
+                    {
+                        return col; //return this column
+                    }
                 }
             }
         }
-        return -1;
+        return -1; //There is no possible stackRight opportunities
     }
+    
     /**
-     * Returns the column that would allow the agent to win.
-     * 
-     * You might want your agent to check to see if it has a winning move available to it so that
-     * it can go ahead and make that move. Implement this method to return what column would
-     * allow the agent to win.
+     * Returns the column that would allow the agent to win.  Looks for vertical wins first
+     * then for wins to the right and finall wins to the left.
      *
      * @return the column that would allow the agent to win.  Returns -1 if no such move exists.
      */
@@ -198,29 +219,28 @@ public class MyAgent extends Agent
         //Vertical look - Checks to see if there is a possible vertical win
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            Connect4Slot top = myGame.getColumn(col).getSlot(lowestEmpty + 1);
-            Connect4Slot second = myGame.getColumn(col).getSlot(lowestEmpty + 2);
-            Connect4Slot third = myGame.getColumn(col).getSlot(lowestEmpty + 3);
-            if (iAmRed)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));  //The lowest empty spot in the column
+            Connect4Slot top = myGame.getColumn(col).getSlot(lowestEmpty + 1); //The top slot in the column
+            Connect4Slot second = myGame.getColumn(col).getSlot(lowestEmpty + 2); //The second to last slot in the column
+            Connect4Slot third = myGame.getColumn(col).getSlot(lowestEmpty + 3); //The last slot in the column
+            if (iAmRed) //If i'm the red player
             {
-                if(lowestEmpty > 0 && top != null && second != null && third != null 
+                if(lowestEmpty > 0 && top != null && second != null && third != null //If the column is not empty, the top, second, and third values are not empty and the top three slots are red
                     && top.getIsRed()
                     && second.getIsRed()
-                    && third.getIsRed()) //Ignore any empty, full or columns that have less than 3 elements
+                    && third.getIsRed())
                 {
-                    return col;
+                    return col;  //Return this column
                 }
-            }
-            else
+            }  
+            else //I'm the yellow player
             {
-                if(lowestEmpty > 0 && top != null && second != null && third != null 
+                if(lowestEmpty > 0 && top != null && second != null && third != null //If the column is not empty, the top, second, and third values are not empty and the top three slots are yellow
                     && top.getIsYellow()
                     && second.getIsYellow()
-                    && third.getIsYellow()) //Ignore any empty, full or columns that have less than 3 elements
+                    && third.getIsYellow())
                     {
-                    return col;
+                    return col; //Return this column
                     }
             }
         }    
@@ -228,35 +248,34 @@ public class MyAgent extends Agent
         //Right look - Checks to see if there is a possible horizontal win to the right
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            if(col + 3 < myGame.getColumnCount() && lowestEmpty != -1)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column
+            if(col + 3 < myGame.getColumnCount() && lowestEmpty != -1)  //If there are three columns to the right and this column is not full
             {
-                Connect4Slot oneRight = myGame.getColumn(col + 1).getSlot(lowestEmpty);
-                Connect4Slot twoRight = myGame.getColumn(col + 2).getSlot(lowestEmpty);
-                Connect4Slot threeRight = myGame.getColumn(col + 3).getSlot(lowestEmpty);
-                if (iAmRed)
+                Connect4Slot oneRight = myGame.getColumn(col + 1).getSlot(lowestEmpty); //The first column to the right
+                Connect4Slot twoRight = myGame.getColumn(col + 2).getSlot(lowestEmpty); //The second column to the right
+                Connect4Slot threeRight = myGame.getColumn(col + 3).getSlot(lowestEmpty); //The third column to the right
+                if (iAmRed)  //If i'm the red player
                 {
-                    if(oneRight.getIsRed() 
+                    if(oneRight.getIsRed() //If the three columns to the right are red and not empty
                         &&twoRight.getIsRed()
                         &&threeRight.getIsRed()
                         &&oneRight != null
                         &&twoRight != null
                         &&threeRight != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                 }
-                else
+                else //I'm the yellow player
                 {
-                    if(oneRight.getIsYellow() 
+                    if(oneRight.getIsYellow() //If the three columns to the right are yellow and not empty
                         &&twoRight.getIsYellow()
                         &&threeRight.getIsYellow()
                         &&oneRight != null
                         &&twoRight != null
                         &&threeRight != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                 }
             }
@@ -265,157 +284,149 @@ public class MyAgent extends Agent
         //Left look - Checks to see if there is a possible horizontal win to the left
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            if(col - 3 > 0 && lowestEmpty != -1)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column
+            if(col - 3 > 0 && lowestEmpty != -1) //If there are three columns to the left and this column is not full
             {
-                Connect4Slot oneLeft = myGame.getColumn(col - 1).getSlot(lowestEmpty);
-                Connect4Slot twoLeft = myGame.getColumn(col - 2).getSlot(lowestEmpty);
-                Connect4Slot threeLeft = myGame.getColumn(col - 3).getSlot(lowestEmpty);
-                if (iAmRed)
+                Connect4Slot oneLeft = myGame.getColumn(col - 1).getSlot(lowestEmpty); //The first column to the left
+                Connect4Slot twoLeft = myGame.getColumn(col - 2).getSlot(lowestEmpty); //The second column to the left
+                Connect4Slot threeLeft = myGame.getColumn(col - 3).getSlot(lowestEmpty); //The third column to the left
+                if (iAmRed) //If i'm the red player
                 {
-                    if(oneLeft.getIsRed() 
+                    if(oneLeft.getIsRed()  //If the three columns to the left are red and they are not empty
                         &&twoLeft.getIsRed()
                         &&threeLeft.getIsRed()
                         &&oneLeft != null
                         &&twoLeft != null
                         &&threeLeft != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                 }
                 else
                 {
-                    if(oneLeft.getIsYellow() 
+                    if(oneLeft.getIsYellow() //If the three columns to the left are yellow and they are not empty
                         &&twoLeft.getIsYellow()
                         &&threeLeft.getIsYellow()
                         &&oneLeft != null
                         &&twoLeft != null
                         &&threeLeft != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                 }
            }
         }
-       return -1;
+       return -1; //There are no possible wins at this time
     }
         
     /**
-     * Returns the column that would allow the opponent to win.
-     * 
-     * You might want your agent to check to see if the opponent would have any winning moves
-     * available so your agent can block them. Implement this method to return what column should
-     * be blocked to prevent the opponent from winning.
+     * Returns the column that would allow the opponent to win.  Looks for vertical wins first
+     * then for wins to the right and finall wins to the left.
      *
      * @return the column that would allow the opponent to win.  Returns -1 if no such move exists.
      */
     public int theyCanWin()
     {
-        //Vertical look
+        //Vertical look - Checks to see if there is a possible vertical win
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            Connect4Slot top = myGame.getColumn(col).getSlot(lowestEmpty + 1);
-            Connect4Slot second = myGame.getColumn(col).getSlot(lowestEmpty + 2);
-            Connect4Slot third = myGame.getColumn(col).getSlot(lowestEmpty + 3);
-            if (iAmRed)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column
+            Connect4Slot top = myGame.getColumn(col).getSlot(lowestEmpty + 1); //The top column that is filled
+            Connect4Slot second = myGame.getColumn(col).getSlot(lowestEmpty + 2); //the second from the top column that is filled
+            Connect4Slot third = myGame.getColumn(col).getSlot(lowestEmpty + 3); //the third from the top column that is filled
+            if (iAmRed) //If i'm the yellow player
             {
-                if(lowestEmpty > 0 && top != null && second != null && third != null 
+                if(lowestEmpty > 0 && top != null && second != null && third != null //If the column is not empty, the top, second, and third values are not empty and the top three slots are yellow
                     && top.getIsYellow()
                     && second.getIsYellow()
-                    && third.getIsYellow()) //Ignore any empty, full or columns that have less than 3 elements
+                    && third.getIsYellow())
                 {
-                    return col;
+                    return col; //Return this column
                 }
             }
-            else
+            else //I'm the red player
             {
-                if(lowestEmpty > 0 && top != null && second != null && third != null 
+                if(lowestEmpty > 0 && top != null && second != null && third != null //If the column is not empty, the top, second, and third values are not empty and the top three slots are red
                     && top.getIsRed()
                     && second.getIsRed()
-                    && third.getIsRed()) //Ignore any empty, full or columns that have less than 3 elements
+                    && third.getIsRed())
                 {
-                    return col;
+                    return col; //Return this column
                 }
             }
         }    
-        
+        //Right look - Checks to see if there is a possible horizontal win to the right
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-            if(col + 3 < myGame.getColumnCount() && lowestEmpty != -1)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col)); //The lowest empty spot in the column
+            if(col + 3 < myGame.getColumnCount() && lowestEmpty != -1) //If there are three columns to the right and this column is not full
             {
-                Connect4Slot oneRight = myGame.getColumn(col + 1).getSlot(lowestEmpty);
-                Connect4Slot twoRight = myGame.getColumn(col + 2).getSlot(lowestEmpty);
-                Connect4Slot threeRight = myGame.getColumn(col + 3).getSlot(lowestEmpty);
-                if (iAmRed)
+                Connect4Slot oneRight = myGame.getColumn(col + 1).getSlot(lowestEmpty); //The first column to the right
+                Connect4Slot twoRight = myGame.getColumn(col + 2).getSlot(lowestEmpty); //The second column to the right
+                Connect4Slot threeRight = myGame.getColumn(col + 3).getSlot(lowestEmpty); //The third column to the right
+                if (iAmRed)  //If i'm the yellow player
                 {                    
-                    if(oneRight.getIsYellow() 
+                    if(oneRight.getIsYellow() //If the three columns to the right are yellow and not empty
                         &&twoRight.getIsYellow()
                         &&threeRight.getIsYellow()
                         &&oneRight != null
                         &&twoRight != null
                         &&threeRight != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                 }
-                else
+                else //I'm the red player
                 {
-                    if(oneRight.getIsRed() 
+                    if(oneRight.getIsRed() //If the three columns to the right are red and not empty
                         &&twoRight.getIsRed()
                         &&threeRight.getIsRed()
                         &&oneRight != null
                         &&twoRight != null
                         &&threeRight != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                 }
             }
         }
-        
+        //Left look - Checks to see if there is a possible horizontal win to the left
         for(int col = 0; col < myGame.getColumnCount(); col++)  //Cycle through each column
         {
-            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));
-            //TODO: Make color dynamic
-
-                if(col - 3 > 0 && lowestEmpty != -1)
+            int lowestEmpty = getLowestEmptyIndex(myGame.getColumn(col));  //The lowest empty spot in the column
+                if(col - 3 > 0 && lowestEmpty != -1)  //If there are three columns to the left and this column is not full
                 {
-                    Connect4Slot oneLeft = myGame.getColumn(col - 1).getSlot(lowestEmpty);
-                    Connect4Slot twoLeft = myGame.getColumn(col - 2).getSlot(lowestEmpty);
-                    Connect4Slot threeLeft = myGame.getColumn(col - 3).getSlot(lowestEmpty);
-                   if (iAmRed)
+                    Connect4Slot oneLeft = myGame.getColumn(col - 1).getSlot(lowestEmpty); //The first column to the left
+                    Connect4Slot twoLeft = myGame.getColumn(col - 2).getSlot(lowestEmpty); //The second column to the left
+                    Connect4Slot threeLeft = myGame.getColumn(col - 3).getSlot(lowestEmpty); //The third column to the left
+                   if (iAmRed) //If i'm the yellow player
                    {
-                    if(oneLeft.getIsYellow() 
+                    if(oneLeft.getIsYellow() //If the three columns to the left are yellow and not empty
                         &&twoLeft.getIsYellow()
                         &&threeLeft.getIsYellow()
                         &&oneLeft != null
                         &&twoLeft != null
                         &&threeLeft != null)
                     {
-                        return col;
+                        return col; //Return this column
                     }
                    }
-                   else
+                   else //I'm the yellow player
                    {
-                    if(oneLeft.getIsRed() 
+                    if(oneLeft.getIsRed()  //If the three columns to the left are red and not empty
                         &&twoLeft.getIsRed()
                         &&threeLeft.getIsRed()
                         &&oneLeft != null
                         &&twoLeft != null
                         &&threeLeft != null)
                         {
-                            return col;
+                            return col; //Return this column
                         }
                     }
                 }
 
         }
-        return -1;
+        return -1; //There are no possible wins at this time
        }
     
     /**

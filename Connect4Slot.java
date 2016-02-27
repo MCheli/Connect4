@@ -58,17 +58,19 @@ public class Connect4Slot
         return isRed;
     }
     /**
-     * TODO: Fill this in
+     * Checks if the slot is filled with yellow or not.
+     * 
+     * @return true if the token in the slot is yellow, false if it is not filled or red
      */
     public boolean getIsYellow()
     {
-        if(this.isFilled && !this.isRed)
+        if(this.isFilled && !this.isRed) //If this slot is filled and is not yellow
         {
-            return true;
+            return true; //Then it is yellow
         }
         else
         {
-            return false;
+            return false; //Then it is not yellow
         }
     }
     /**
@@ -97,7 +99,6 @@ public class Connect4Slot
             this.isRed = false;
         }
     }
-    
     /**
      * Checks if the slot should be highlighted because it is part of a winning move.
      * 
