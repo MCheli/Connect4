@@ -302,7 +302,7 @@ public class MyAgent extends Agent
                         return col; //Return this column
                     }
                 }
-                else
+                else //I'm the yellow player
                 {
                     if(oneLeft.getIsYellow() //If the three columns to the left are yellow and they are not empty
                         &&twoLeft.getIsYellow()
